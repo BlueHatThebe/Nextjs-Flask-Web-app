@@ -1,18 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask_mysqldb import MySQL
+import requests  # Import requests library for HTTP requests
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
-
-# MySQL Configuration
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'rootSQL8'
-app.config['MYSQL_DB'] = 'Example1'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
-mysql = MySQL(app)
 
 @app.route('/')
 def index():
@@ -21,10 +12,9 @@ def index():
 @app.route('/api/data', methods=['GET'])
 def get_all_data():
     try:
-        cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM example_table")
-        data = cursor.fetchall()
-        cursor.close()
+        # Make a GET request to Wazicloud API endpoint
+        response = requests.get('https://api.waziup.io/api/v2/devices?q=owner==thebzennkhasi@gmail.com')
+        data = response.json()  # Extract JSON data from the response
         return jsonify(data)
     except Exception as e:
         return jsonify({'error': str(e)})
