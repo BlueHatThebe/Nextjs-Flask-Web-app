@@ -39,9 +39,9 @@ def get_all_data():
 
                 # Extract relevant fields from the device data
                 name = device.get('name', '')
-                id = device.get('id', '')
-                actuators = ','.join(device.get('actuators', []))  # Convert list to comma-separated string
-                sensors = ','.join(device.get('sensors', []))  # Convert list to comma-separated string
+                device_id = device.get('id', '')
+                actuators = ','.join(str(actuator) for actuator in device.get('actuators', []))
+                sensors = ','.join(str(sensor) for sensor in device.get('sensors', []))
                 gateway_id = device.get('gateway_id', '')
                 domain = device.get('domain', '')
                 owner = device.get('owner', '')
@@ -51,9 +51,10 @@ def get_all_data():
                 cur = mysql.connection.cursor()
 
                 # Insert data into `devices_data2` table
-                cur.execute("INSERT INTO devices_data2 (name, id, actuators, sensors, gateway_id, domain, owner, visibility) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                            (name, id, actuators, sensors, gateway_id, domain, owner, visibility))
+                sql = "INSERT INTO devices_data2 (name, id, actuators, sensors, gateway_id, domain, owner, visibility) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                values = (name, device_id, actuators, sensors, gateway_id, domain, owner, visibility)
 
+                cur.execute(sql, values)
                 mysql.connection.commit()  # Commit changes
                 cur.close()  # Close cursor
 
@@ -63,6 +64,8 @@ def get_all_data():
         else:
             return jsonify({'error': 'Failed to fetch data from Wazicloud API'})
 
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Request Exception: {str(e)}'})
     except Exception as e:
         return jsonify({'error': str(e)})
 
